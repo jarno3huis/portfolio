@@ -31,6 +31,7 @@ The projects in this repository are built progressively. I only list technologie
 
 | Project | Focus | Status |
 |---|---|---|
+| 00 - home-lab-nas | | Progress|
 | 01 - Networking Lab | TCP/IP, DNS, DHCP, routing | Planned |
 | 02 - Linux Server Lab | Linux administration, SSH, services, permissions | Planned |
 | 03 - Windows & Active Directory Lab | AD, DNS, GPO, users & groups | Planned |
