@@ -64,3 +64,58 @@ Group Policy
       v
 Windows Client
 ```
+
+# Home Lab Progress — Checkpoint
+
+This checkpoint captures the current state of the infrastructure home lab.
+
+## Completed
+
+### Networking
+- IPv4 fundamentals practiced
+- DNS and DHCP concepts practiced
+- VirtualBox NAT, Internal Network and Host-Only networking configured
+- Basic network troubleshooting practiced
+
+### Linux
+- Ubuntu Server deployed
+- SSH remote access configured
+- Users and groups practiced
+- Linux permissions practiced
+- Services and processes practiced
+
+### Windows Infrastructure
+- Windows Server 2025 deployed
+- Server Core configured
+- WinRM / PowerShell Remoting configured
+- Active Directory Domain Services installed
+- DC01 promoted to Domain Controller
+- `lab.home` created
+- DNS configured
+- AD users, groups and OUs created
+- Windows 11 Pro client joined to the domain
+- Client computer moved into the intended OU
+- First Group Policy created and linked
+
+## Current Architecture
+
+```text
+                         Host PC
+                            |
+                     Host-Only Network
+                      192.168.56.0/24
+                            |
+                         DC01
+                  Windows Server 2025
+                  192.168.50.10
+                            |
+                         lab.home
+                            |
+                      WD-SERVER
+                   Windows 11 Pro
+                    Domain Member
+```
+
+## Next Milestone
+
+The next session will continue with Group Policy, administrative permissions and further security configuration.
