@@ -27,27 +27,26 @@ Build a small Windows domain environment for a fictional company.
 ## What I learned
 
 
+# Windows Server & Active Directory Lab
+
 ## Overview
 
-As part of my IT infrastructure home lab, I deployed a Windows Server 2025 Standard Evaluation virtual machine in VirtualBox.
+As part of my IT infrastructure home lab, I deployed Windows Server 2025 in VirtualBox and built the first part of a small enterprise-style Windows environment.
 
-The goal is to build a small enterprise-style Windows infrastructure environment while developing practical skills in system administration, networking, identity management, security and automation.
+The goal is to develop practical skills in Windows Server administration, networking, identity management, Group Policy and troubleshooting.
 
-The environment is being built and documented step by step rather than following only theoretical exercises.
+## Environment
 
-## Current Environment
-
-### Server
-
-- Hostname: `DC01`
+- Domain Controller: `DC01`
 - Operating system: Windows Server 2025 Standard Evaluation
-- Installation type: Server Core
+- Domain: `lab.home`
 - Virtualization: VirtualBox
+- Server interface: Server Core
 - Remote administration: PowerShell Remoting / WinRM
 
 ## Network Architecture
 
-The server uses separate virtual network interfaces for different purposes.
+The server uses separate virtual networks for different purposes:
 
 ```text
                          Internet
@@ -62,125 +61,120 @@ The server uses separate virtual network interfaces for different purposes.
                             |         |
                      192.168.50.x   192.168.56.x
                                       |
-                                      |
-                                Host PC
-                                192.168.56.1
+                                    Host PC
 ```
 
-### NAT
+**NAT** provides outbound internet access.
 
-The NAT adapter provides outbound internet connectivity for the server, such as downloading updates and required components.
-
-Current address observed during setup:
+**IT-LAB** is used for communication between lab VMs:
 
 ```text
-10.0.2.15
+Network: 192.168.50.0/24
+DC01:    192.168.50.10
 ```
 
-### Internal Network - IT-LAB
-
-The Internal Network is intended for communication between the virtual machines inside the isolated lab.
-
-Planned network:
+**Host-Only** is used for management access:
 
 ```text
-192.168.50.0/24
+Host: 192.168.56.1
+DC01: 192.168.56.101
 ```
-
-The server's planned internal lab address is:
-
-```text
-192.168.50.10/24
-```
-
-### Host-Only Network
-
-A separate Host-Only network was configured for management access between the physical host and the virtual server.
-
-Host:
-
-```text
-192.168.56.1
-```
-
-DC01:
-
-```text
-192.168.56.101
-```
-
-This keeps management traffic separate from the physical home network.
 
 ## Remote Management
 
-Because the Windows Server installation uses Server Core, remote administration was configured using Windows Remote Management (WinRM) and PowerShell Remoting.
+Because Server Core does not provide the normal graphical management experience, PowerShell Remoting was configured through WinRM.
 
-The setup required troubleshooting several layers:
-
-```text
-Network connectivity
-        |
-        v
-Host-Only networking
-        |
-        v
-WinRM
-        |
-        v
-Firewall / access configuration
-        |
-        v
-Authentication
-        |
-        v
-PowerShell Remoting
-```
-
-The final connection was successfully established from the host PC.
-
-The remote session was opened using:
+The connection was successfully established from the host computer:
 
 ```powershell
 Enter-PSSession -ComputerName 192.168.56.101 -Credential (Get-Credential)
 ```
 
-The remote PowerShell prompt confirmed that commands were being executed on the Windows Server.
+## Active Directory
 
-## Troubleshooting - WinRM
+Active Directory Domain Services was installed and `DC01` was promoted to a Domain Controller.
 
-Initially, remote PowerShell access failed even though the server was running.
+The lab domain is:
 
-The investigation included:
+```text
+lab.home
+```
 
-- Checking the server's IP configuration
-- Checking VirtualBox adapter configuration
-- Separating NAT, Internal Network and Host-Only traffic
-- Testing connectivity with `ping`
-- Testing TCP port `5985`
-- Configuring WinRM
-- Configuring the WinRM client
-- Adding the lab server to TrustedHosts for this isolated lab
-- Retesting PowerShell Remoting
+DNS was configured as part of the Active Directory deployment.
 
-The final result was a working remote PowerShell session.
+During setup, DNS initially registered multiple network interfaces on the multi-homed server. DNS registration was adjusted so the IT-LAB interface is the intended DNS-registered address:
 
-This was an important practical exercise because it demonstrated that a remote-access problem can involve multiple layers: networking, services, firewall configuration and authentication.
+```text
+DC01 → 192.168.50.10
+```
 
-## Skills Practiced
+## Active Directory Structure
 
-- Windows Server 2025
-- Server Core
-- VirtualBox
-- PowerShell
-- IPv4 networking
-- NAT
-- Internal Network
-- Host-Only networking
-- Network segmentation
-- WinRM
-- PowerShell Remoting
-- Basic firewall troubleshooting
-- Remote server administration
+```text
+lab.home
+│
+├── IT
+│   ├── Users
+│   ├── Admins
+│   └── Computers
+│       └── WD-SERVER
+│
+└── Groups
+    ├── IT-Users
+    └── IT-Admins
+```
+
+Users and security groups were created to begin separating normal usage from administrative responsibilities.
+
+## Windows Client
+
+A Windows 11 Pro virtual machine named `WD-SERVER` was successfully joined to the `lab.home` domain.
+
+The computer object was moved into:
+
+```text
+OU=Computers,OU=IT,DC=lab,DC=home
+```
+
+A domain user was successfully used to log in to the Windows client.
+
+## Group Policy
+
+The first Group Policy Object was created:
+
+```text
+IT-Workstations
+```
+
+The GPO was linked to:
+
+```text
+OU=Computers,OU=IT,DC=lab,DC=home
+```
+
+A `gpupdate /force` was successfully executed on the client.
+
+The next stage is to verify and configure the policy so its effective settings can be tested.
+
+## Troubleshooting
+
+### WinRM
+
+Remote management initially failed. The investigation covered IP configuration, VirtualBox adapters, Host-Only networking, connectivity, WinRM, TrustedHosts and authentication. The result was a successful remote PowerShell session.
+
+### DNS
+
+The multi-homed Domain Controller initially registered all three interface addresses in DNS. The interfaces were reviewed and DNS registration was adjusted so the IT-LAB address is the intended DNS-registered address.
+
+### Windows Domain Join
+
+The first domain join attempt failed. DNS was investigated and corrected, but the client still could not join the domain. The root cause was then identified: the client was running Windows 11 Home, which does not support joining an Active Directory domain. The client was moved to Windows 11 Pro and the domain join then succeeded.
+
+### Active Directory object placement
+
+After joining the domain, `WD-SERVER` initially appeared in the default `Computers` container. It was moved into the custom `IT → Computers` OU.
+
+While experimenting with PowerShell, an accidental `IT-Workstations` OU was created. Active Directory's `ProtectedFromAccidentalDeletion` setting prevented its deletion until the protection was explicitly disabled.
 
 ## Current Status
 
@@ -188,36 +182,55 @@ This was an important practical exercise because it demonstrated that a remote-a
 |---|---|
 | Windows Server 2025 | Complete |
 | Server Core | Complete |
-| NAT connectivity | Complete |
-| Internal lab network | Configured |
-| Host-Only management network | Complete |
+| VirtualBox networking | Complete |
+| NAT | Complete |
+| IT-LAB network | Complete |
+| Host-Only management | Complete |
 | WinRM | Complete |
 | PowerShell Remoting | Complete |
-| Active Directory Domain Services | Next step |
-| Domain Controller promotion | Planned |
-| DNS | Planned |
-| Users & Groups | Planned |
-| Group Policy | Planned |
-| Windows Client domain join | Planned |
+| AD DS | Complete |
+| Domain Controller | Complete |
+| DNS | Complete |
+| `lab.home` domain | Complete |
+| AD Users | Complete |
+| AD Groups | Complete |
+| OU structure | Complete |
+| Windows 11 Pro client | Complete |
+| Domain Join | Complete |
+| Client computer OU | Complete |
+| First GPO | Complete |
+| GPO effective-policy testing | Next |
 
 ## Next Steps
 
-The next stage of the project is to install and configure Active Directory Domain Services and turn `DC01` into a Domain Controller.
+1. Verify the effective `IT-Workstations` policy
+2. Configure a simple test policy
+3. Test policy application on `WD-SERVER`
+4. Review administrative privileges and least privilege
+5. Create additional security groups
+6. Configure useful workstation policies
+7. Continue toward a more complete enterprise-style environment
 
-Planned architecture:
+## Lessons Learned
+
+A major lesson from this project has been the importance of troubleshooting one layer at a time:
 
 ```text
-                 DC01
-                  |
-          Active Directory
-                  |
-          +-------+-------+
-          |               |
-        Users           Groups
-          |
-     Group Policy
-          |
-    Windows Client
+Network
+   ↓
+IP configuration
+   ↓
+DNS
+   ↓
+Service
+   ↓
+Firewall
+   ↓
+Authentication
+   ↓
+Application / management
 ```
+
+The lab has demonstrated how DNS, network adapter configuration, Windows editions, Active Directory structure and permissions interact in an infrastructure environment.
 
 The environment will then be expanded with DNS, organizational units, users, security groups, Group Policy and PowerShell automation.
