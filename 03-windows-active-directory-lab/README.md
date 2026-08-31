@@ -1,4 +1,4 @@
-# 03 - Windows active Directory lab
+# 03 - Windows active directory lab
 
 ## Goal
 
