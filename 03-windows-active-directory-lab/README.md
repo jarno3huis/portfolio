@@ -1,4 +1,3 @@
-# 03 - Windows & Active Directory Lab
 
 ## Goal
 
