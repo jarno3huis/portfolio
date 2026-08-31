@@ -32,9 +32,9 @@ The projects in this repository are built progressively. I only list technologie
 | Project | Focus | Status |
 |---|---|---|
 | 00 - home-lab-nas | | Progress|
-| 01 - Networking Lab | TCP/IP, DNS, DHCP, routing | Planned |
-| 02 - Linux Server Lab | Linux administration, SSH, services, permissions | Planned |
-| 03 - Windows & Active Directory Lab | AD, DNS, GPO, users & groups | Planned |
+| 01 - Networking Lab | TCP/IP, DNS, DHCP, routing | Progress |
+| 02 - Linux Server Lab | Linux administration, SSH, services, permissions | Progress |
+| 03 - Windows & Active Directory Lab | AD, DNS, GPO, users & groups | Progress |
 | 04 - PowerShell Automation | System administration automation | Planned |
 | 05 - Security Hardening Lab | Hardening, logging, IAM, security controls | Planned |
 | 06 - Azure Infrastructure | Azure networking, compute, Entra ID, RBAC | Planned |
