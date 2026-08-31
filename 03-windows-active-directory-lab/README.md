@@ -1,4 +1,4 @@
-# Windows Server & Active Directory Lab
+# 03-Windows-active-directoy-lab
 
 ## Goal
 
