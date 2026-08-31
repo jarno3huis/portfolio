@@ -1,3 +1,4 @@
+# Windows Server & Active Directory Lab
 
 ## Goal
 
@@ -25,7 +26,6 @@ Build a small Windows domain environment for a fictional company.
 
 ## What I learned
 
-# Windows Server & Active Directory Lab
 
 ## Overview
 
